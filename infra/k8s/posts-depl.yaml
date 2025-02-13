@@ -1,0 +1,49 @@
+# Définition de la version de l'API Kubernetes pour les objets Deployment (ici v1 pour les déploiements)
+apiVersion: apps/v1
+
+# Type de l'objet Kubernetes, ici un déploiement (Deployment)
+kind: Deployment
+
+# Métadonnées liées au déploiement
+metadata:
+  # Nom du déploiement. C'est ainsi que le déploiement sera identifié dans Kubernetes
+  name: posts-depl
+
+# Spécifications du déploiement
+spec:
+  # Le nombre de réplicas (copies) de pods à maintenir en fonctionnement
+  replicas: 1  # Ici, on indique que l'on veut 1 seul pod en fonctionnement
+
+  # Sélecteur qui permet à Kubernetes de savoir quels pods doivent être gérés par ce déploiement
+  selector:
+    # Critères de sélection des pods associés à ce déploiement. Ici, on les sélectionne par le label "app: posts"
+    matchLabels:
+      app: posts  # Ce label permet de faire correspondre le pod à ce déploiement
+
+  # Le template de pod utilisé pour déployer les pods. C'est la structure que Kubernetes utilise pour créer les pods
+  template:
+    metadata:
+      # Les labels associés au pod, qui permettent de l'identifier et de le lier au déploiement
+      labels:
+        app: posts  # Le label "app: posts" pour que ce pod corresponde à la règle de sélection définie plus haut
+    spec:
+      # Spécifications des containers à exécuter dans le pod
+      containers:
+        # Définition du premier (et ici le seul) container dans ce pod
+        - name: posts  # Le nom du conteneur, utilisé pour identifier le conteneur dans le pod
+          image: braco/posts:1  # L'image Docker du conteneur, ici "braco/posts" avec le tag "1"
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: posts-clusterip-srv
+spec:
+  selector:
+    app: posts
+  ports:
+    - name: posts
+      protocol: TCP
+      port: 4000
+      targetPort: 4000
