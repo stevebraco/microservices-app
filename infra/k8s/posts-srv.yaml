@@ -1,13 +1,35 @@
+# 📌 Définition d'un Service Kubernetes pour exposer l'application "posts"
 apiVersion: v1
 kind: Service
+
+# 📌 Métadonnées du Service
 metadata:
-  name: posts-srv
+  name: posts-srv  # 🏷️ Nom du Service, utilisé pour le référencer dans Kubernetes
+
 spec:
+  # 🔄 Type du Service : "NodePort" permet d'exposer l'application sur un port du nœud du cluster,
+  # rendant ainsi le service accessible depuis l'extérieur (ex. via l'IP du nœud et un port spécifique).
   type: NodePort
+
+  # 🎯 Sélecteur permettant d’associer ce Service aux pods portant le label "app: posts"
   selector:
     app: posts
+
+  # 📌 Définition des ports par lesquels le Service sera accessible
   ports:
-    - name: posts
-      protocol: TCP
-      port: 4000
-      targetPort: 4000
+    - name: posts  # Nom du port pour identification interne
+      protocol: TCP  # 📡 Protocole utilisé pour la communication réseau (ici TCP)
+      port: 4000  # 📌 Port sur lequel le Service sera accessible à l'intérieur du cluster
+      targetPort: 4000  # 🎯 Port interne du pod cible (doit correspondre à celui utilisé par l’application)
+      # NodePort sera automatiquement attribué par Kubernetes (par défaut entre 30000 et 32767)
+
+# 📝 Débrief général :
+# - Ce fichier YAML définit un **Service de type "NodePort"** pour l’application "posts".
+#
+# - **Service "posts-srv"** :
+#   - Sélectionne les pods ayant le label `app: posts`.
+#   - Expose ces pods sur le port 4000 **au sein du cluster**.
+#   - Rend le service accessible **depuis l'extérieur** en lui assignant un **port NodePort** (entre 30000 et 32767).
+#
+# - **Différence avec un Service de type ClusterIP** :
+#   - **ClusterIP** : Accessible uniquem

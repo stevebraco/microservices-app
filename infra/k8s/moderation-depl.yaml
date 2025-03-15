@@ -7,7 +7,7 @@ kind: Deployment
 # 📌 Métadonnées liées au déploiement
 metadata:
   # 🏷️ Nom du déploiement. Il est utilisé pour identifier ce Deployment dans Kubernetes
-  name: event-bus-depl
+  name: moderation-depl
 
 # 📌 Spécifications du déploiement
 spec:
@@ -16,52 +16,52 @@ spec:
 
   # 🎯 Sélecteur qui permet à Kubernetes d’associer ce déploiement aux pods correspondants
   selector:
-    # 🏷️ Critère de sélection basé sur un label spécifique (app: event-bus)
+    # 🏷️ Critère de sélection basé sur un label spécifique (app: moderation)
     matchLabels:
-      app: event-bus  # Ce label associe les pods au déploiement
+      app: moderation  # Ce label associe les pods au déploiement
 
   # 📌 Modèle de pod utilisé par le déploiement pour créer les instances de pods
   template:
     metadata:
       # 🏷️ Labels définis pour le pod, qui doivent correspondre au sélecteur ci-dessus
       labels:
-        app: event-bus  # Label qui lie le pod au Deployment
+        app: moderation  # Label qui lie le pod au Deployment
 
     spec:
       # 📌 Définition des containers qui seront exécutés dans le pod
       containers:
-        - name: event-bus  # Nom du conteneur, utilisé pour l'identification interne
-          image: elbraco/event-bus  # 🐳 Image Docker utilisée pour ce conteneur (doit être disponible sur un registre)
+        - name: moderation  # Nom du conteneur, utilisé pour l'identification interne
+          image: elbraco/moderation  # 🐳 Image Docker utilisée pour ce conteneur (doit être disponible sur un registre)
 
 ---
 
-# 📌 Définition d'un Service Kubernetes pour exposer le pod event-bus
+# 📌 Définition d'un Service Kubernetes pour exposer le pod moderation
 apiVersion: v1
 kind: Service
 metadata:
-  name: event-bus-srv  # 🏷️ Nom du service, utilisé pour référencer ce service dans Kubernetes
+  name: moderation-srv  # 🏷️ Nom du service, utilisé pour référencer ce service dans Kubernetes
 
 spec:
-  # 🎯 Sélecteur permettant d’associer ce service aux pods avec le label "app: event-bus"
+  # 🎯 Sélecteur permettant d’associer ce service aux pods avec le label "app: moderation"
   selector:
-    app: event-bus  # Associe ce service aux pods qui portent le label "app: event-bus"
+    app: moderation  # Associe ce service aux pods qui portent le label "app: moderation"
 
   # 📌 Définition des ports sur lesquels le service sera accessible
   ports:
-    - name: event-bus  # Nom du port, utile pour l'identification interne
+    - name: moderation  # Nom du port, utile pour l'identification interne
       protocol: TCP  # 📡 Protocole utilisé (TCP, standard pour la communication réseau)
-      port: 4005  # 📌 Port exposé par le service (accès au sein du cluster)
-      targetPort: 4005  # 🎯 Port interne du pod cible (doit correspondre au port utilisé par l’application)
+      port: 4003  # 📌 Port exposé par le service (accès au sein du cluster)
+      targetPort: 4003  # 🎯 Port interne du pod cible (doit correspondre au port utilisé par l’application)
 
 # 📝 Débrief général :
-# - Ce fichier définit un **Deployment** et un **Service** pour l’application `event-bus`.
+# - Ce fichier définit un **Deployment** et un **Service** pour l’application `moderation`.
 # - **Deployment** :
-#   - Il crée un seul pod (`replicas: 1`) basé sur l’image `elbraco/event-bus`.
-#   - Il associe ce pod avec le label `app: event-bus` pour pouvoir le retrouver facilement.
+#   - Il crée un seul pod (`replicas: 1`) basé sur l’image `elbraco/moderation`.
+#   - Il associe ce pod avec le label `app: moderation` pour pouvoir le retrouver facilement.
 # - **Service** :
-#   - Il expose le pod `event-bus` en interne dans Kubernetes avec le nom `event-bus-srv`.
-#   - Il route le trafic vers le port 4005 du pod.
-# - Cette configuration permet au pod `event-bus` d’être découvert et contacté par d’autres services dans le cluster.
+#   - Il expose le pod `moderation` en interne dans Kubernetes avec le nom `moderation-srv`.
+#   - Il route le trafic vers le port 4003 du pod.
+# - Cette configuration permet au pod `moderation` d’être découvert et contacté par d’autres services dans le cluster.
 
 # 🚀 Améliorations possibles :
 # - Augmenter le nombre de `replicas` pour une meilleure disponibilité et résilience.

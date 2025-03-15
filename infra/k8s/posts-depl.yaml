@@ -1,49 +1,70 @@
-# Définition de la version de l'API Kubernetes pour les objets Deployment (ici v1 pour les déploiements)
+# 📌 Définition de la version de l'API Kubernetes pour les objets Deployment (ici apps/v1 pour gérer les déploiements)
 apiVersion: apps/v1
 
-# Type de l'objet Kubernetes, ici un déploiement (Deployment)
+# 📌 Type de l'objet Kubernetes, ici un Déploiement (Deployment) qui permet de gérer les pods
 kind: Deployment
 
-# Métadonnées liées au déploiement
+# 📌 Métadonnées liées au déploiement
 metadata:
-  # Nom du déploiement. C'est ainsi que le déploiement sera identifié dans Kubernetes
+  # 🏷️ Nom du déploiement. Il est utilisé pour identifier ce Deployment dans Kubernetes
   name: posts-depl
 
-# Spécifications du déploiement
+# 📌 Spécifications du déploiement
 spec:
-  # Le nombre de réplicas (copies) de pods à maintenir en fonctionnement
-  replicas: 1  # Ici, on indique que l'on veut 1 seul pod en fonctionnement
+  # 🔄 Nombre de réplicas (copies) du pod que Kubernetes doit maintenir en fonctionnement
+  replicas: 1  # Ici, un seul pod est instancié
 
-  # Sélecteur qui permet à Kubernetes de savoir quels pods doivent être gérés par ce déploiement
+  # 🎯 Sélecteur qui permet à Kubernetes d’associer ce déploiement aux pods correspondants
   selector:
-    # Critères de sélection des pods associés à ce déploiement. Ici, on les sélectionne par le label "app: posts"
+    # 🏷️ Critère de sélection basé sur un label spécifique (app: posts)
     matchLabels:
-      app: posts  # Ce label permet de faire correspondre le pod à ce déploiement
+      app: posts  # Ce label associe les pods au déploiement
 
-  # Le template de pod utilisé pour déployer les pods. C'est la structure que Kubernetes utilise pour créer les pods
+  # 📌 Modèle de pod utilisé par le déploiement pour créer les instances de pods
   template:
     metadata:
-      # Les labels associés au pod, qui permettent de l'identifier et de le lier au déploiement
+      # 🏷️ Labels définis pour le pod, qui doivent correspondre au sélecteur ci-dessus
       labels:
-        app: posts  # Le label "app: posts" pour que ce pod corresponde à la règle de sélection définie plus haut
+        app: posts  # Label qui lie le pod au Deployment
+
     spec:
-      # Spécifications des containers à exécuter dans le pod
+      # 📌 Définition des containers qui seront exécutés dans le pod
       containers:
-        # Définition du premier (et ici le seul) container dans ce pod
-        - name: posts  # Le nom du conteneur, utilisé pour identifier le conteneur dans le pod
-          image: braco/posts:1  # L'image Docker du conteneur, ici "braco/posts" avec le tag "1"
+        - name: posts  # Nom du conteneur, utilisé pour l'identification interne
+          image: elbraco/posts  # 🐳 Image Docker utilisée pour ce conteneur
 
 ---
 
+# 📌 Définition d'un Service Kubernetes pour exposer le pod "posts"
 apiVersion: v1
 kind: Service
 metadata:
-  name: posts-clusterip-srv
+  name: posts-clusterip-srv  # 🏷️ Nom du service, utilisé pour référencer ce service dans Kubernetes
+
 spec:
+  # 🎯 Sélecteur permettant d’associer ce service aux pods avec le label "app: posts"
   selector:
-    app: posts
+    app: posts  # Associe ce service aux pods qui portent le label "app: posts"
+
+  # 📌 Définition des ports sur lesquels le service sera accessible
   ports:
-    - name: posts
-      protocol: TCP
-      port: 4000
-      targetPort: 4000
+    - name: posts  # Nom du port, utile pour l'identification interne
+      protocol: TCP  # 📡 Protocole utilisé (TCP, standard pour la communication réseau)
+      port: 4000  # 📌 Port exposé par le service (accès au sein du cluster)
+      targetPort: 4000  # 🎯 Port interne du pod cible (doit correspondre au port utilisé par l’application)
+
+# 📝 Débrief général :
+# - Ce fichier définit un **Deployment** et un **Service** pour l’application `posts`.
+# - **Deployment** :
+#   - Il crée un seul pod (`replicas: 1`) basé sur l’image `elbraco/posts`.
+#   - Il associe ce pod avec le label `app: posts` pour pouvoir le retrouver facilement.
+# - **Service** :
+#   - Il expose le pod `posts` en interne dans Kubernetes avec le nom `posts-clusterip-srv`.
+#   - Il route le trafic vers le port 4000 du pod.
+# - Ce **Service** est de type `ClusterIP` (par défaut), ce qui signifie qu'il est uniquement accessible **depuis l'intérieur du cluster**.
+
+# 🚀 Améliorations possibles :
+# - Augmenter le nombre de `replicas` pour une meilleure disponibilité et résilience.
+# - Ajouter une `readinessProbe` et `livenessProbe` pour garantir que le pod est sain et prêt à recevoir du trafic.
+# - Ajouter une gestion des **logs** et de la **surveillance** pour suivre l'état du pod.
+# - Si l'application doit être accessible depuis l'extérieur du cluster, envisager un **Service de type NodePort ou LoadBalancer**.

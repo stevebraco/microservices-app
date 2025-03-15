@@ -1,0 +1,58 @@
+apiVersion: networking.k8s.io/v1  # Utilisation de l'API Kubernetes pour gérer l'Ingress
+kind: Ingress  # Déclare une ressource Ingress pour router les requêtes HTTP/HTTPS
+metadata:
+  name: ingress-srv  # Nom de l'Ingress, utile pour l'identifier dans le cluster
+  annotations:
+    kubernetes.io/ingress.class: nginx  # Spécifie que cet Ingress est géré par le contrôleur Nginx
+    nginx.ingress.kubernetes.io/use-regex: "true"  # Active l'utilisation des regex pour certaines routes
+
+spec:
+  rules:  # Définition des règles de routage HTTP
+    - host: posts.com  # Ce routage s'applique uniquement au domaine posts.com
+      http:
+        paths:
+          - path: /posts/create  # Route les requêtes commençant par /posts/create
+            pathType: Prefix  # Correspond à un préfixe exact
+            backend:
+              service:
+                name: posts-clusterip-srv  # Envoie les requêtes au service `posts-clusterip-srv`
+                port:
+                  number: 4000  # Port d'écoute du service (gère la création de posts)
+
+          - path: /posts  # Route les requêtes vers /posts
+            pathType: Prefix  # Correspondance par préfixe
+            backend:
+              service:
+                name: query-srv  # Redirige vers le service `query-srv`
+                port:
+                  number: 4002  # Port du service (probablement pour récupérer les posts)
+
+          - path: /posts/?(.*)/comments  # Route les requêtes pour récupérer les commentaires d’un post spécifique
+            pathType: ImplementationSpecific  # Permet d'utiliser une expression régulière
+            backend:
+              service:
+                name: comments-srv  # Envoie les requêtes au service `comments-srv`
+                port:
+                  number: 4001  # Port du service (gère les commentaires)
+
+          - path: /?(.*)  # Route toutes les autres requêtes vers le frontend
+            pathType: ImplementationSpecific  # Utilisation d'une regex pour capturer toutes les routes non définies ci-dessus
+            backend:
+              service:
+                name: client-srv  # Envoie les requêtes au service `client-srv`
+                port:
+                  number: 3000  # Port du service (probablement l'application frontend)
+
+# 📌 Débrief :
+# - Cet Ingress route les requêtes basées sur le domaine `posts.com`
+# - Il distribue le trafic vers différents services en fonction du chemin :
+#   - `/posts/create` → Service `posts-clusterip-srv` (port 4000) pour créer un post.
+#   - `/posts` → Service `query-srv` (port 4002) pour récupérer les posts.
+#   - `/posts/{id}/comments` → Service `comments-srv` (port 4001) pour gérer les commentaires.
+#   - Toutes les autres requêtes (`/.*`) → Service `client-srv` (port 3000), qui sert probablement l'interface utilisateur.
+# - Utilisation de **NGINX** comme contrôleur Ingress.
+# - Usage de **regex** pour gérer des chemins dynamiques (`posts/{id}/comments` et `/.*`).
+# - Possibles améliorations :
+#   - Ajouter une configuration **TLS** pour la sécurité.
+#   - Ajouter des règles de **restriction d’accès** si nécessaire.
+#   - Optimiser l’utilisation des **regex** pour de meilleures performances.
